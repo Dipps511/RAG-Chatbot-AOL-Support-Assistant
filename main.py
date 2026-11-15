@@ -23,6 +23,7 @@ Architecture Overview:
 import datetime
 import html
 import json
+import os
 import re
 from urllib.parse import quote_plus, urlparse
 
@@ -35,13 +36,13 @@ from bs4 import BeautifulSoup
 # 1. AWS BEDROCK CONFIGURATION & CLIENT INITIALIZATION
 # ======================================================================================
 
-REGION = "us-east-2"
+REGION = os.getenv("AWS_REGION", "us-east-2")
 
 # ARN / Model ID for Anthropic Claude on AWS Bedrock (used for answer generation)
-MODEL_ID = "us.anthropic.claude-opus-4-5-20251101-v1:0"
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "us.anthropic.claude-opus-4-5-20251101-v1:0")
 
 # AWS Bedrock Knowledge Base ID containing indexed Art of Living wisdom documents/articles
-KNOWLEDGE_BASE_ID = "GMBZWNP2XE"
+KNOWLEDGE_BASE_ID = os.getenv("BEDROCK_KB_ID", "GMBZWNP2XE")
 
 accept = "application/json"
 contentType = "application/json"
