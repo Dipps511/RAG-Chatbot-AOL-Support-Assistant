@@ -1,0 +1,27 @@
+# Virtual Environments
+venv/
+atbot_venv/
+env/
+.venv/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Streamlit generated / cache
+.streamlit/
+.agents/
+.claude/
+
+# AWS & Environment secrets
+.env
+*.pem
+credentials.toml
