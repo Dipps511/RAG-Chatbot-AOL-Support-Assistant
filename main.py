@@ -37,22 +37,43 @@ from bs4 import BeautifulSoup
 # 1. AWS BEDROCK CONFIGURATION & CLIENT INITIALIZATION
 # ======================================================================================
 
-REGION = os.getenv("AWS_REGION", "us-east-2")
+# Helper to resolve configuration from Streamlit secrets (Cloud) or environment variables (Local)
+def _get_config(key: str, default: str | None = None) -> str | None:
+    try:
+        if hasattr(st, "secrets") and key in st.secrets:
+            return str(st.secrets[key])
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
+REGION = _get_config("AWS_REGION", _get_config("AWS_DEFAULT_REGION", "us-east-2"))
 
 # ARN / Model ID for Anthropic Claude on AWS Bedrock (used for answer generation)
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "us.anthropic.claude-opus-4-5-20251101-v1:0")
+MODEL_ID = _get_config("BEDROCK_MODEL_ID", "us.anthropic.claude-opus-4-5-20251101-v1:0")
 
 # AWS Bedrock Knowledge Base ID containing indexed Art of Living wisdom documents/articles
-KNOWLEDGE_BASE_ID = os.getenv("BEDROCK_KB_ID", "GMBZWNP2XE")
+KNOWLEDGE_BASE_ID = _get_config("BEDROCK_KB_ID", "GMBZWNP2XE")
 
 accept = "application/json"
 contentType = "application/json"
 
+# Build boto3 client arguments (supports AWS credentials from Streamlit Secrets or ~/.aws)
+_boto_kwargs = {"region_name": REGION}
+_aws_access_key = _get_config("AWS_ACCESS_KEY_ID")
+_aws_secret_key = _get_config("AWS_SECRET_ACCESS_KEY")
+_aws_session_token = _get_config("AWS_SESSION_TOKEN")
+
+if _aws_access_key and _aws_secret_key:
+    _boto_kwargs["aws_access_key_id"] = _aws_access_key
+    _boto_kwargs["aws_secret_access_key"] = _aws_secret_key
+    if _aws_session_token:
+        _boto_kwargs["aws_session_token"] = _aws_session_token
+
 # Bedrock Agent Runtime client: handles vector search retrieval (`retrieve` API)
-bedrock_agent_client = boto3.client("bedrock-agent-runtime", region_name=REGION)
+bedrock_agent_client = boto3.client("bedrock-agent-runtime", **_boto_kwargs)
 
 # Bedrock Runtime client: handles LLM inference (`invoke_model` API with Claude)
-bedrock_client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+bedrock_client = boto3.client(service_name="bedrock-runtime", **_boto_kwargs)
 
 # ======================================================================================
 # 2. STREAMLIT PAGE CONFIGURATION & CUSTOM STYLES
